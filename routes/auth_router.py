@@ -15,6 +15,10 @@ class UserIn(BaseModel):
     email: str
 
 
+class UserLogin(BaseModel):
+    email: str
+    password: str
+
 class UserDB(BaseModel):
     fullName: str
     email: str
@@ -27,7 +31,7 @@ class UserOut(BaseModel):
 @router.post("/signup",response_model=UserOut)
 async def signup(user: UserIn) -> UserOut:
     print(user.model_dump())
-    existing_user = await prisma.staff.find_unique(where={"email": user.email})
+    existing_user = await prisma.client.find_unique(where={"email": user.email})
     if existing_user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -38,7 +42,7 @@ async def signup(user: UserIn) -> UserOut:
     hashed_password = hash_password(user.password)
 
     # Create new user
-    new_user = await prisma.staff.create(
+    new_user = await prisma.client.create(
         data={
             'fullName':user.fullName,
             "email": user.email,
@@ -48,8 +52,9 @@ async def signup(user: UserIn) -> UserOut:
 
     return new_user
 @router.post("/login")
-async def login(form_data: OAuth2PasswordRequestForm = Depends()):
-    user = await prisma.user.find_unique(where={"email": form_data.username})
+async def login(form_data: UserLogin):
+    print(form_data)
+    user = await prisma.staff.find_unique(where={"email": form_data.email})
     if not user or not verify_password(form_data.password, user.password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
