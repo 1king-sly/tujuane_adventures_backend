@@ -1,0 +1,98 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator py {
+  provider             = "prisma-client-py"
+  recursive_type_depth = 5
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+//Staff members of the company
+model Staff {
+  id         String     @id @default(cuid())
+  fullName   String
+  email      String     @unique
+  password   String
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  activities Activity[]
+}
+
+// Clients of the company
+model Client {
+  id          String      @id @default(cuid())
+  name        String
+  email       String      @unique
+  phoneNumber String
+  image       String?
+  bookings    Booking[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  testimonies Testimony[]
+}
+
+// Partners of the company
+model Partner {
+  id          String      @id @default(cuid())
+  name        String
+  email       String      @unique
+  phoneNumber String
+  image       String?
+  bookings    Booking[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  testimonies Testimony[]
+  Activity    Activity?   @relation(fields: [activityId], references: [id])
+  activityId  String?
+}
+
+// Activities created by staff members
+model Activity {
+  id             String      @id @default(cuid())
+  name           String
+  location       String
+  date           DateTime
+  pricePerPerson Float
+  discount       Float?
+  newPrice       Float?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  createdBy      Staff       @relation(fields: [createdById], references: [id])
+  createdById    String
+  bookings       Booking[]
+  partners       Partner[]
+  images         String[]
+  testimonies    Testimony[]
+}
+
+// Bookings model to track bookings by clients or partners
+model Booking {
+  id         String   @id @default(cuid())
+  client     Client?  @relation(fields: [clientId], references: [id])
+  clientId   String?
+  partner    Partner? @relation(fields: [partnerId], references: [id])
+  partnerId  String?
+  activity   Activity @relation(fields: [activityId], references: [id])
+  activityId String
+  createdAt  DateTime @default(now())
+}
+
+// Testimonies related to activities
+model Testimony {
+  id         String    @id @default(cuid())
+  content    String
+  createdAt  DateTime  @default(now())
+  client     Client?   @relation(fields: [clientId], references: [id])
+  clientId   String?
+  partner    Partner?  @relation(fields: [partnerId], references: [id])
+  partnerId  String?
+  activity   Activity? @relation(fields: [activityId], references: [id])
+  activityId String
+}
