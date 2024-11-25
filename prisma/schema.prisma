@@ -60,6 +60,7 @@ model Activity {
   name           String
   location       String
   date           DateTime
+  logo           String
   pricePerPerson Float
   discount       Float?
   newPrice       Float?

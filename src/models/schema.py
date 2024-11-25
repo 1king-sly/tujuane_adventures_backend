@@ -1,3 +1,6 @@
+from typing import Annotated
+
+from fastapi import UploadFile, Form
 from pydantic import BaseModel
 
 class UserLogin(BaseModel):
@@ -14,3 +17,10 @@ class UserOut(BaseModel):
 class UserDB(UserOut):
     hashed_password: str
 
+class Activity(BaseModel):
+    name: Annotated[str, Form()]
+    location: str
+    date: str
+    price:int
+    discount:int | None = None
+    image: UploadFile | None = None
