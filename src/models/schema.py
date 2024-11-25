@@ -24,3 +24,6 @@ class Activity(BaseModel):
     price:int
     discount:int | None = None
     image: UploadFile | None = None
+
+class TestimonyCreate(BaseModel):
+    content:str

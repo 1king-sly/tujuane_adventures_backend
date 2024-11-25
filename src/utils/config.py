@@ -20,12 +20,13 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
         raise HTTPException(status_code=404,detail="Email not found")
 
 
-
     staff = await prisma.staff.find_unique(where={"id": email})
     partner =await prisma.partner.find_unique(where={"id": email})
     client =await prisma.client.find_unique(where={"id": email})
 
+
     if staff:
+
         return staff
     elif partner:
         return partner

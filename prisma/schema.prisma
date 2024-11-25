@@ -24,6 +24,7 @@ model Staff {
   createdAt  DateTime   @default(now())
   updatedAt  DateTime   @updatedAt
   activities Activity[]
+  role       String     @default("ADMIN")
 }
 
 // Clients of the company
@@ -37,6 +38,7 @@ model Client {
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
   testimonies Testimony[]
+  role        String      @default("CLIENT")
 }
 
 // Partners of the company
@@ -52,6 +54,7 @@ model Partner {
   testimonies Testimony[]
   Activity    Activity?   @relation(fields: [activityId], references: [id])
   activityId  String?
+  role        String      @default("PARTNER")
 }
 
 // Activities created by staff members
