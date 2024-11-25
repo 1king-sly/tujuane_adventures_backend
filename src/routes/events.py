@@ -25,8 +25,9 @@ async def create_event(
     location: Annotated[str, Form()],
     date: Annotated[str, Form()],
     price: Annotated[int, Form()],
-    discount: Annotated[int | None, Form()] = None,
     image: UploadFile | None = None,
+    discount: Annotated[int | None, Form()] = None,
+    max_attendees: Annotated[int | None, Form()] = None,
     user=Depends(get_current_user),):
 
     if not user:
@@ -34,6 +35,7 @@ async def create_event(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid token",
         )
+
 
 
     image_url = await upload_image(image)
@@ -52,7 +54,7 @@ async def create_event(
         raise HTTPException(status_code=400, detail="Invalid date format. Use ISO format.")
 
     try:
-        activity = await prisma.activity.create(
+        activity =  await prisma.activity.create(
             data={
                 "name": name,
                 "location": location,
@@ -62,6 +64,7 @@ async def create_event(
                 "newPrice": new_price,
                 "createdById": user.id,
                 "logo": image_url,
+                "maxAttendees":max_attendees
             }
         )
 

@@ -61,6 +61,8 @@ model Activity {
   location       String
   date           DateTime
   logo           String
+  maxAttendees   Int
+  attendees      Int         @default(0)
   pricePerPerson Float
   discount       Float?
   newPrice       Float?
