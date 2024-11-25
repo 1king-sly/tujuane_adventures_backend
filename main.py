@@ -1,7 +1,7 @@
-from routes import auth_router,booking,events
-from fastapi import FastAPI, Depends, HTTPException, status
+from src.routes import auth_router, booking, events
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from db import prisma, connect_db, disconnect_db
+from src.db import connect_db, disconnect_db
 
 
 
@@ -10,10 +10,7 @@ from db import prisma, connect_db, disconnect_db
 
 app = FastAPI()
 
-origins = [
-    "http://localhost:3000/",  # Allow your frontend application
-    "https://your-frontend-domain.com",  # Allow your production frontend domain
-]
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -40,7 +37,7 @@ async def shutdown():
 
 @app.get("/")
 async def root():
-    return {"message": "Hello World"}
+    return {"message": "Hello Byrone"}
 
 
 

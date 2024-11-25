@@ -1,32 +1,15 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordRequestForm
+from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
 
-from auth import hash_password, verify_password, create_access_token
-from db import prisma
+from src.models.schema import UserOut, UserIn, UserLogin
+from src.utils.auth import hash_password, verify_password, create_access_token
+from src.db import prisma
 router = APIRouter(
     prefix="/auth",
     tags=["auth"],
 )
 
-class UserIn(BaseModel):
-    fullName: str
-    password: str
-    email: str
 
-
-class UserLogin(BaseModel):
-    email: str
-    password: str
-
-class UserDB(BaseModel):
-    fullName: str
-    email: str
-    hashed_password: str
-
-class UserOut(BaseModel):
-    fullName: str
-    email: str
 
 @router.post("/signup",response_model=UserOut)
 async def signup(user: UserIn) -> UserOut:
@@ -53,7 +36,6 @@ async def signup(user: UserIn) -> UserOut:
     return new_user
 @router.post("/login")
 async def login(form_data: UserLogin):
-    print(form_data)
     user = await prisma.staff.find_unique(where={"email": form_data.email})
     if not user or not verify_password(form_data.password, user.password):
         raise HTTPException(
