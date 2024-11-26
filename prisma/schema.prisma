@@ -48,7 +48,7 @@ model Partner {
   email       String      @unique
   phoneNumber String
   image       String?
-  bookings    Booking[]
+  // bookings    Booking[]
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
   testimonies Testimony[]
@@ -81,14 +81,16 @@ model Activity {
 
 // Bookings model to track bookings by clients or partners
 model Booking {
-  id         String   @id @default(cuid())
-  client     Client?  @relation(fields: [clientId], references: [id])
-  clientId   String?
-  partner    Partner? @relation(fields: [partnerId], references: [id])
-  partnerId  String?
-  activity   Activity @relation(fields: [activityId], references: [id])
-  activityId String
-  createdAt  DateTime @default(now())
+  id        String   @id @default(cuid())
+  userId    String
+  eventId   String
+  people    Int
+  totalCost Float
+  // status    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      Client   @relation(fields: [userId], references: [id])
+  event     Activity @relation(fields: [eventId], references: [id])
 }
 
 // Testimonies related to activities
