@@ -170,7 +170,7 @@ async def create_testimony(event_id:str,testimony:TestimonyCreate,user= Depends(
         raise HTTPException(status_code=400,detail=str(e))
 
 
-@router.post("/{event_id}/upload")
+@router.put("/{event_id}/upload")
 async def upload_images(event_id:str,images:List[UploadFile],user= Depends(get_current_user)):
     try:
         if not user:
@@ -184,13 +184,23 @@ async def upload_images(event_id:str,images:List[UploadFile],user= Depends(get_c
             image_url = await upload_image(image)
             if image_url:
                 images_url.append(image_url)
+
+        existing_event = await prisma.activity.find_unique(
+            where={"id": event_id},
+        )
+        if not existing_event:
+            raise HTTPException(status_code=404, detail="Event not found")
+
+
+        updated_images = (existing_event.images or []) + images_url
+
                 
         images_upload = await prisma.activity.update(
             where={
                 "id":event_id
             },
             data={
-               "images" :images_url
+               "images" :updated_images
             }
 
         )
