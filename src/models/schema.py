@@ -30,4 +30,5 @@ class TestimonyCreate(BaseModel):
 
 class Booking(BaseModel):
     people:int
-    totalCost:float
+    totalCost:int
+    phoneNumber:str

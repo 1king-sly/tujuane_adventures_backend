@@ -10,9 +10,11 @@ router = APIRouter(
 )
 
 @router.post("/{event_id}")
-async def book_event(event_id: str, booking: Booking):
+async def book_event(event_id: str, booking: Booking, user = Depends(get_current_user)):
 
+    print(booking.model_dump())
+    if not user:
+        raise HTTPException(status_code=404, detail="User Not Found")
 
-
-    payment_response = await create_payment()
+    payment_response = await create_payment(amount=booking.totalCost,phone_number=booking.phoneNumber)
     print(payment_response)

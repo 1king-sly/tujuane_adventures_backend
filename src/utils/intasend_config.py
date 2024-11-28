@@ -10,10 +10,10 @@ token = os.getenv('PAYMENT_PUBLISHABLE_TOKEN')
 publishable_key = os.getenv('PAYMENT_PUBLISHABLE_KEY')
 service = APIService(token=token, publishable_key=publishable_key, test=True)
 
-async def create_payment():
+async def create_payment(amount:int,phone_number:str):
     try:
-        response = service.collect.mpesa_stk_push(phone_number=254720041750,
-                                                  email="kinslybyrone17@gmail.com", amount=10, narrative="Purchase")
+        response = service.collect.mpesa_stk_push(phone_number=phone_number,
+                                                  email="kinslybyrone17@gmail.com", amount=amount, narrative="Purchase")
         return response
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
