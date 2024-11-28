@@ -27,3 +27,8 @@ class Activity(BaseModel):
 
 class TestimonyCreate(BaseModel):
     content:str
+
+class Booking(BaseModel):
+    people:int
+    totalCost:int
+    phoneNumber:str
