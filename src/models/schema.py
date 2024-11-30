@@ -32,3 +32,6 @@ class Booking(BaseModel):
     people:int
     totalCost:int
     phoneNumber:str
+
+class CallbackRequest(BaseModel):
+    Body: dict

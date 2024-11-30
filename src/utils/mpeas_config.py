@@ -1,8 +1,11 @@
+from asyncio import Future
 from datetime import datetime
 
 from dotenv import load_dotenv
 
 import os
+import aiohttp
+
 
 import  requests
 from fastapi import HTTPException
@@ -10,6 +13,7 @@ from httpx import AsyncClient
 
 import base64
 
+from starlette.responses import JSONResponse
 
 load_dotenv()
 
@@ -39,10 +43,7 @@ def generate_password():
     timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
     password = base64.b64encode(f"{SHORTCODE}{PASSKEY}{timestamp}".encode()).decode()
     return password, timestamp
-
-
-def initiate_stk_push(phone_number: str, amount: int):
-    """Initiate an STK Push request."""
+async def initiate_stk_push(phone_number: str, amount: int):
     try:
 
         access_token = get_access_token()
@@ -64,36 +65,73 @@ def initiate_stk_push(phone_number: str, amount: int):
             "PartyA": phone_number,
             "PartyB": SHORTCODE,
             "PhoneNumber": phone_number,
-            "CallBackURL": "https://mydomain.com/path",
-            "AccountReference": "CompanyXLTD",
-            "TransactionDesc": "Payment of X"
+            "CallBackURL": "https://85d6-197-248-74-74.ngrok-free.app/booking/callback",
+            "AccountReference": "Booking Payment",
+            "TransactionDesc": "Payment for booking an event"
         }
 
-        response = requests.request("POST", 'https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest',
-                                    headers=headers, json=payload)
-        response.raise_for_status()
-        response_data = response.json()
-        return response_data
+        async with aiohttp.ClientSession() as async_session:
+            async with async_session.post(url='https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest', headers=headers, json=payload) as response:
+                response.raise_for_status()
+                response_data = await response.json()
+
+                print("STK Push response:", response_data)
+
+
+                return response_data
+
+    except aiohttp.ClientError as e:
+        raise HTTPException(status_code=500, detail=f"HTTP request failed: {e}")
+
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
 
 
 
 
-# def query_stkpush_status(access_token, checkout_request_id):
-#     """Query the stk push status using the checkout request ID."""
-#     headers = {"Authorization": f"Bearer {access_token}"}
-#     password, timestamp = generate_password()
-#     payload = {
-#     "BusinessShortCode": STKPUSH_BUSINESS_SHORTCODE,
-#     "Password": password,
-#     "Timestamp": timestamp,
-#     "CheckoutRequestID": checkout_request_id
-#     }
-#
-#     response = requests.post(STKPUSH_STATUS_URL, json=payload, headers=headers, timeout=10)
-#     print(response.json())
-#     if response.status_code == 200:
-#         return response.json()
-#     else:
-#         raise Exception("Failed to query stk push status")
+async def check_transaction_status(transaction_id: str):
+    access_token = get_access_token()
+
+    url = "https://sandbox.safaricom.co.ke/mpesa/transactionstatus/v1/query"
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json"
+    }
+    payload = {
+        "Initiator": "api_initiator",
+        "SecurityCredential": "encrypted_credential",
+        "CommandID": "TransactionStatusQuery",
+        "TransactionID": transaction_id,
+        "PartyA": SHORTCODE,
+        "IdentifierType": "1",
+        "ResultURL": "https://85d6-197-248-74-74.ngrok-free.app/booking/transaction-status",
+        "QueueTimeOutURL": "https://85d6-197-248-74-74.ngrok-free.app/booking/timeout",
+        "Remarks": "Checking transaction status"
+    }
+
+    response = requests.post(url, headers=headers, json=payload)
+    if response.status_code == 200:
+        return response.json()
+    raise HTTPException(status_code=500, detail="Transaction status query failed")
+
+callback_responses = {}
+
+async def notify_booking_process(transaction_id: str):
+    """
+    Notify the main booking flow about the callback.
+    """
+    print(f'Notify Booking Process : {transaction_id}')
+    if transaction_id in callback_responses:
+        callback_responses[transaction_id].set_result(transaction_id)
+    else:
+        callback_responses[transaction_id] = Future()
+        callback_responses[transaction_id].set_result(transaction_id)
+
+async def wait_for_callback_and_get_transaction_id(checkout_request_id: str):
+    """
+    Wait for the callback to provide transaction ID.
+    """
+    if checkout_request_id not in callback_responses:
+        callback_responses[checkout_request_id] = Future()
+    return await callback_responses[checkout_request_id]

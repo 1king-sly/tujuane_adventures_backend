@@ -1,3 +1,5 @@
+from mpesasync.contracts import STKPushResult
+
 from src.routes import auth_router, booking, events
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -38,6 +40,13 @@ async def shutdown():
 @app.get("/")
 async def root():
     return {"message": "Hello Byrone"}
+
+@app.post("stkpush/callback")
+def stk_push_callback(data: STKPushResult):
+    ## do your zing
+    print("Callback called")
+    print(data)
+    return {"OK"}
 
 
 
