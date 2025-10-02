@@ -1,17 +1,14 @@
 import 'package:bus_pos/core/services/api_client.dart';
+import 'package:bus_pos/core/services/local_storage.dart';
 import 'package:bus_pos/features/authentication/models/user_model.dart';
 import 'package:bus_pos/features/authentication/repository/auth_repository.dart';
 import 'package:flutter/material.dart';
 
 class AuthProvider extends ChangeNotifier {
-  final AuthRepository repository;
+  final AuthRepository repository = AuthRepository();
 
-  AuthProvider(this.repository);
-
-  UserModel? _user;
   bool _isLoading = false;
 
-  UserModel? get user => _user;
   bool get isLoading => _isLoading;
 
   Future<void> login(String email, String password) async {
@@ -19,9 +16,10 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _user = await repository.login(email, password);
-      if (_user != null) {
-        client.setAuthToken(_user!.token);
+      user = await repository.login(email, password);
+      if (user != null) {
+        client.setAuthToken(user!.token);
+        storage.setJson("user", user!.toJson());
       }
     } catch (e) {
       debugPrint("Login failed: $e");
@@ -36,9 +34,10 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _user = await repository.register(email, name, password);
-      if (_user != null) {
-        client.setAuthToken(_user!.token);
+      user = await repository.register(email, name, password);
+      if (user != null) {
+        client.setAuthToken(user!.token);
+        storage.setJson("user", user!.toJson());
       }
     } catch (e) {
       debugPrint("Registration failed: $e");

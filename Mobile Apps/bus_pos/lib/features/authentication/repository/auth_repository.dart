@@ -2,9 +2,8 @@ import 'package:bus_pos/features/authentication/data/auth_api.dart';
 import 'package:bus_pos/features/authentication/models/user_model.dart';
 
 class AuthRepository {
-  final AuthApi api;
+  final AuthApi api = AuthApi();
 
-  AuthRepository(this.api);
 
   Future<UserModel> login(String email, String password) =>
       api.login(email, password);
