@@ -5,7 +5,7 @@ import 'package:bus_pos/features/authentication/repository/auth_repository.dart'
 import 'package:flutter/material.dart';
 
 class AuthProvider extends ChangeNotifier {
-  final AuthRepository repository = AuthRepository();
+  final AuthRepository _repository = AuthRepository();
 
   bool _isLoading = false;
 
@@ -16,7 +16,7 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      user = await repository.login(email, password);
+      user = await _repository.login(email, password);
       if (user != null) {
         client.setAuthToken(user!.token);
         storage.setJson("user", user!.toJson());
@@ -34,7 +34,7 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      user = await repository.register(email, name, password);
+      user = await _repository.register(email, name, password);
       if (user != null) {
         client.setAuthToken(user!.token);
         storage.setJson("user", user!.toJson());
